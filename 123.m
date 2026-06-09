@@ -396,8 +396,6 @@
       width: 100%;
       cursor: default;
       filter: drop-shadow(0 8px 24px rgba(233, 30, 140, 0.3));
-      touch-action: none;
-      -webkit-tap-highlight-color: transparent;
     }
 
     .candle-flame {
@@ -991,7 +989,7 @@
       b.textContent = '🎈';
       b.style.fontSize = '0px'; // use color bg only
 
-      function popBalloon() {
+      b.onclick = () => {
         if (b.classList.contains('popped')) return;
         b.classList.add('popped');
         poppedCount++;
@@ -1001,13 +999,7 @@
           document.getElementById('next-cake-btn').style.display = 'block';
         }
         setTimeout(() => b.remove(), 400);
-      }
-
-      b.onclick = popBalloon;
-      b.addEventListener('touchstart', function(e) {
-        e.preventDefault();
-        popBalloon();
-      }, { passive: false });
+      };
       stage.appendChild(b);
     }
 
@@ -1070,49 +1062,31 @@
         }, i * 200);
       });
       document.getElementById('blow-btn').style.display = 'none';
-      document.getElementById('cake-instruction').textContent = 'Swipe/drag down on the cake to cut it! 🔪';
+      document.getElementById('cake-instruction').textContent = 'Drag the knife down to cut the cake! 🔪';
       document.getElementById('knife-svg').style.display = 'block';
 
-      // Enable knife dragging on SVG — works for both mouse and touch
+      // Enable knife dragging on SVG
       const svg = document.getElementById('cake-svg');
+      const knifeSvg = document.getElementById('knife-svg');
 
       svg.style.cursor = 'crosshair';
-      // Required for pointer events to fire reliably on touch devices
-      svg.style.touchAction = 'none';
 
       let cutting = false;
       let cutProgress = 0;
-      let startClientY = 0;
-
-      // Remove any previously attached listeners to avoid duplicates
-      svg.removeEventListener('pointerdown', startCut);
-      svg.removeEventListener('pointermove', doCut);
-      svg.removeEventListener('pointerup', endCut);
-      svg.removeEventListener('pointercancel', endCut);
 
       svg.addEventListener('pointerdown', startCut);
       svg.addEventListener('pointermove', doCut);
       svg.addEventListener('pointerup', endCut);
-      svg.addEventListener('pointercancel', endCut);
 
       function startCut(e) {
         if (cakeCut) return;
-        e.preventDefault();
         cutting = true;
         cutProgress = 0;
-        startClientY = e.clientY;
-        // Capture pointer so events keep firing even if finger moves outside element
-        svg.setPointerCapture(e.pointerId);
       }
 
       function doCut(e) {
         if (!cutting || cakeCut) return;
-        e.preventDefault();
-        // Use the distance dragged downward as cut progress
-        const draggedY = e.clientY - startClientY;
-        if (draggedY > 0) {
-          cutProgress = draggedY;
-        }
+        cutProgress += 5;
         const line = document.getElementById('cut-line');
         const endY = Math.min(108 + cutProgress * 1.4, 252);
         line.setAttribute('y2', endY);
@@ -1126,18 +1100,12 @@
       }
 
       function endCut(e) {
-        if (!cakeCut) {
-          if (cutProgress > 20) {
-            cakeCut = true;
-            completeCut();
-          } else {
-            // Reset line if drag wasn't enough
-            document.getElementById('cut-line').setAttribute('opacity', '0');
-            document.getElementById('cut-line').setAttribute('y2', '108');
-          }
+        if (!cakeCut && cutProgress > 20) {
+          cakeCut = true;
+          cutting = false;
+          completeCut();
         }
         cutting = false;
-        cutProgress = 0;
       }
     }
 

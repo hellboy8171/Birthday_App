@@ -1,0 +1,810 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Happy Birthday Surprise 🎂</title>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700;900&family=Nunito:wght@400;600;700;800&display=swap" rel="stylesheet">
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  :root {
+    --purple-bg: #7c4dff;
+    --purple-light: #b39ddb;
+    --purple-dark: #4527a0;
+    --pink-bg: #fce4ec;
+    --pink-hot: #e91e8c;
+    --pink-med: #f48fb1;
+    --yellow: #ffd740;
+    --white: #ffffff;
+    --card-bg: rgba(255,255,255,0.18);
+    --btn-purple: #5e35b1;
+  }
+
+  html, body {
+    height: 100%;
+    font-family: 'Nunito', sans-serif;
+    overflow: hidden;
+  }
+
+  /* ===== SCENE SYSTEM ===== */
+  .scene {
+    position: fixed; inset: 0;
+    display: flex; flex-direction: column;
+    align-items: center; justify-content: center;
+    opacity: 0; pointer-events: none;
+    transition: opacity 0.5s ease;
+  }
+  .scene.active {
+    opacity: 1; pointer-events: all;
+  }
+
+  /* ===== MUSIC BTN ===== */
+  .music-btn {
+    position: fixed; top: 18px; right: 18px; z-index: 999;
+    width: 52px; height: 52px; border-radius: 50%;
+    background: rgba(255,255,255,0.85); border: none; cursor: pointer;
+    font-size: 22px; display: flex; align-items: center; justify-content: center;
+    box-shadow: 0 4px 14px rgba(0,0,0,0.15);
+    transition: transform 0.2s;
+  }
+  .music-btn:hover { transform: scale(1.1); }
+  .music-btn.playing { animation: spin 4s linear infinite; }
+  @keyframes spin { to { transform: rotate(360deg); } }
+
+  /* ===== FLOATING ICONS BG ===== */
+  .float-icons {
+    position: absolute; inset: 0; overflow: hidden; pointer-events: none; z-index: 0;
+  }
+  .float-icon {
+    position: absolute; font-size: 28px; opacity: 0.22;
+    animation: floatDrift 6s ease-in-out infinite;
+  }
+  @keyframes floatDrift {
+    0%, 100% { transform: translateY(0) rotate(0deg); }
+    50% { transform: translateY(-18px) rotate(10deg); }
+  }
+
+  /* ===== CARD ===== */
+  .card {
+    background: rgba(255,255,255,0.18);
+    backdrop-filter: blur(12px);
+    border: 1px solid rgba(255,255,255,0.3);
+    border-radius: 28px;
+    padding: 40px 32px;
+    max-width: 380px; width: 90%;
+    text-align: center;
+    z-index: 1;
+    animation: cardPop 0.5s cubic-bezier(0.34,1.56,0.64,1) both;
+  }
+  @keyframes cardPop {
+    from { transform: scale(0.8) translateY(30px); opacity: 0; }
+    to { transform: scale(1) translateY(0); opacity: 1; }
+  }
+
+  .card-icon { font-size: 52px; margin-bottom: 16px; display: block;
+    animation: iconBounce 1s ease-in-out infinite alternate; }
+  @keyframes iconBounce { from { transform: scale(1); } to { transform: scale(1.15); } }
+
+  .card-text { font-size: 22px; font-weight: 700; color: var(--white); line-height: 1.4; margin-bottom: 28px; }
+
+  .btn-row { display: flex; gap: 14px; justify-content: center; flex-wrap: wrap; }
+
+  .btn {
+    background: var(--btn-purple);
+    color: white; font-family: 'Nunito', sans-serif;
+    font-size: 17px; font-weight: 700;
+    border: none; border-radius: 20px; padding: 16px 28px;
+    cursor: pointer; transition: transform 0.15s, box-shadow 0.15s;
+    box-shadow: 0 6px 20px rgba(0,0,0,0.2);
+  }
+  .btn:hover { transform: translateY(-3px) scale(1.05); box-shadow: 0 10px 28px rgba(0,0,0,0.25); }
+  .btn:active { transform: scale(0.96); }
+
+  /* ===========================
+     SCENE 1 – Welcome
+  =========================== */
+  #s1 {
+    background: linear-gradient(160deg, #7c4dff 0%, #b066d4 60%, #e040fb 100%);
+  }
+
+  /* ===========================
+     SCENE 2 – Song
+  =========================== */
+  #s2 {
+    background: linear-gradient(160deg, #7c4dff 0%, #9c27b0 100%);
+  }
+
+  /* ===========================
+     SCENE 3 – Party intro
+  =========================== */
+  #s3 {
+    background: linear-gradient(160deg, #7c4dff 0%, #b039d4 70%, #e040fb 100%);
+  }
+  .big-msg {
+    z-index: 1; color: white;
+    font-size: 28px; font-weight: 800;
+    text-align: center; padding: 28px 32px;
+    background: rgba(255,255,255,0.15);
+    backdrop-filter: blur(10px);
+    border-radius: 24px; max-width: 88%;
+    animation: cardPop 0.5s cubic-bezier(0.34,1.56,0.64,1) both;
+  }
+
+  /* ===========================
+     SCENE 4 – Balloon Pop
+  =========================== */
+  #s4 {
+    background: var(--pink-bg);
+    flex-direction: column;
+    justify-content: flex-start;
+  }
+  #s4 h2 {
+    font-family: 'Playfair Display', serif;
+    color: var(--pink-hot); font-size: 36px; font-weight: 900;
+    text-align: center; padding: 28px 20px 12px;
+    z-index: 1;
+  }
+  #balloon-stage {
+    flex: 1; width: 100%; position: relative; overflow: hidden;
+  }
+  .balloon {
+    position: absolute; bottom: -120px;
+    width: 70px; height: 90px;
+    border-radius: 50% 50% 50% 50% / 55% 55% 45% 45%;
+    cursor: pointer; transition: transform 0.1s;
+    animation: riseUp linear forwards;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 24px; user-select: none;
+  }
+  .balloon::after {
+    content: ''; position: absolute; bottom: -30px; left: 50%;
+    transform: translateX(-50%);
+    width: 1px; height: 30px; background: #aaa;
+  }
+  .balloon:hover { transform: scale(1.1); }
+  @keyframes riseUp {
+    from { bottom: -120px; opacity: 1; }
+    to { bottom: 110%; opacity: 0.7; }
+  }
+  .balloon.popped {
+    animation: popBurst 0.4s ease forwards !important;
+  }
+  @keyframes popBurst {
+    0% { transform: scale(1); opacity: 1; }
+    40% { transform: scale(1.8); opacity: 0.8; }
+    100% { transform: scale(0); opacity: 0; }
+  }
+  #pop-counter {
+    position: absolute; top: 16px; right: 20px; z-index: 10;
+    background: var(--pink-hot); color: white;
+    font-size: 20px; font-weight: 800; padding: 8px 18px; border-radius: 30px;
+  }
+  #next-cake-btn {
+    position: fixed; bottom: 0; left: 0; right: 0; z-index: 20;
+    background: var(--pink-hot); color: white;
+    font-size: 18px; font-weight: 800; padding: 20px;
+    border: none; cursor: pointer; display: none;
+    font-family: 'Nunito', sans-serif;
+    animation: slideUp 0.4s ease;
+  }
+  @keyframes slideUp { from { transform: translateY(100%); } to { transform: translateY(0); } }
+
+  /* ===========================
+     SCENE 5 – Cake Ceremony
+  =========================== */
+  #s5 {
+    background: var(--pink-bg);
+    flex-direction: column;
+    justify-content: flex-start;
+    overflow-y: auto;
+  }
+  #s5 h2 {
+    font-family: 'Playfair Display', serif;
+    color: var(--pink-hot); font-size: 24px; font-weight: 900;
+    text-align: center; padding: 24px 20px 10px; z-index: 1;
+  }
+  #cake-area {
+    width: 100%; max-width: 420px; padding: 0 20px 30px; z-index: 1;
+  }
+
+  /* CAKE SVG */
+  #cake-svg { width: 100%; cursor: default; filter: drop-shadow(0 8px 24px rgba(233,30,140,0.3)); }
+
+  .candle-flame {
+    opacity: 0; transform-origin: center bottom;
+    transition: opacity 0.3s;
+    cursor: pointer;
+  }
+  .candle-flame.lit { opacity: 1; animation: flicker 0.4s ease-in-out infinite alternate; }
+  @keyframes flicker {
+    from { transform: scaleX(1) scaleY(1) rotate(-3deg); }
+    to { transform: scaleX(0.85) scaleY(1.15) rotate(3deg); }
+  }
+  .candle-body { cursor: pointer; transition: filter 0.2s; }
+  .candle-body:hover { filter: brightness(1.2); }
+
+  #cake-instruction {
+    text-align: center; color: var(--pink-hot);
+    font-size: 16px; font-weight: 700; margin-top: 12px;
+  }
+
+  /* Knife */
+  #knife {
+    position: absolute;
+    width: 60px; pointer-events: none;
+    transform: rotate(-45deg);
+    display: none; z-index: 50;
+    filter: drop-shadow(2px 2px 4px rgba(0,0,0,0.3));
+  }
+
+  #cut-overlay {
+    position: absolute; overflow: hidden; pointer-events: none;
+    z-index: 40;
+  }
+
+  #cake-container { position: relative; }
+
+  #blow-btn {
+    display: block; margin: 16px auto 0;
+    background: var(--pink-hot); color: white;
+    font-family: 'Nunito', sans-serif; font-size: 17px; font-weight: 800;
+    border: none; border-radius: 20px; padding: 14px 36px;
+    cursor: pointer; display: none;
+    transition: transform 0.15s, box-shadow 0.15s;
+    box-shadow: 0 6px 20px rgba(233,30,140,0.35);
+  }
+  #blow-btn:hover { transform: translateY(-3px); }
+
+  #proceed-msg-btn {
+    display: none; margin: 16px auto 0;
+    background: var(--pink-hot); color: white;
+    font-family: 'Nunito', sans-serif; font-size: 17px; font-weight: 800;
+    border: none; border-radius: 20px; padding: 14px 36px;
+    cursor: pointer;
+    box-shadow: 0 6px 20px rgba(233,30,140,0.35);
+  }
+
+  /* Confetti on cake */
+  .confetti-dot {
+    position: absolute; width: 8px; height: 8px; border-radius: 50%;
+    animation: confettiFall 1.5s ease-in forwards;
+    pointer-events: none;
+  }
+  @keyframes confettiFall {
+    from { transform: translateY(-20px) rotate(0); opacity: 1; }
+    to { transform: translateY(200px) rotate(360deg); opacity: 0; }
+  }
+
+  /* ===========================
+     SCENE 6 – Message + Playlist
+  =========================== */
+  #s6 {
+    background: linear-gradient(160deg, #f48fb1 0%, #ce93d8 50%, #b39ddb 100%);
+    overflow-y: auto;
+    align-items: center;
+    justify-content: flex-start;
+    padding: 30px 0 60px;
+  }
+
+  .photo-card {
+    width: 85%; max-width: 320px;
+    background: rgba(255,255,255,0.25);
+    border-radius: 20px; overflow: hidden;
+    margin: 0 auto 24px;
+    animation: cardPop 0.6s ease both;
+    box-shadow: 0 12px 36px rgba(0,0,0,0.15);
+  }
+  .photo-placeholder {
+    width: 100%; aspect-ratio: 3/4;
+    background: linear-gradient(135deg, #f8a5c2 0%, #ce93d8 50%, #b39ddb 100%);
+    display: flex; flex-direction: column; align-items: center; justify-content: center;
+    font-size: 60px; gap: 14px;
+  }
+  .photo-caption {
+    padding: 18px 20px; color: white; font-size: 14px; font-weight: 600;
+    line-height: 1.6; font-style: italic;
+  }
+
+  .playlist-card {
+    width: 85%; max-width: 360px;
+    background: rgba(255,255,255,0.22);
+    border-radius: 24px; padding: 24px;
+    margin: 0 auto 24px;
+    animation: cardPop 0.7s ease both;
+  }
+  .playlist-title {
+    font-size: 22px; font-weight: 800; color: var(--purple-dark);
+    margin-bottom: 16px;
+  }
+  .song-item {
+    display: flex; align-items: center; gap: 14px;
+    padding: 12px 0; border-bottom: 1px solid rgba(255,255,255,0.3);
+  }
+  .song-item:last-child { border-bottom: none; }
+  .song-num {
+    width: 34px; height: 34px; border-radius: 50%;
+    background: var(--btn-purple); color: white;
+    font-weight: 800; font-size: 14px;
+    display: flex; align-items: center; justify-content: center;
+    flex-shrink: 0;
+  }
+  .song-name { font-weight: 700; color: #333; }
+
+  /* ===========================
+     SCENE 7 – Final Card
+  =========================== */
+  #s7 {
+    background: linear-gradient(160deg, #f06292 0%, #ce93d8 50%, #9575cd 100%);
+  }
+  .final-card {
+    background: white;
+    border-radius: 28px; padding: 44px 32px;
+    max-width: 360px; width: 88%;
+    text-align: center; z-index: 1;
+    animation: cardPop 0.6s cubic-bezier(0.34,1.56,0.64,1) both;
+    box-shadow: 0 20px 60px rgba(0,0,0,0.2);
+  }
+  .final-heart { font-size: 52px; margin-bottom: 10px; display: block;
+    animation: heartbeat 1s ease-in-out infinite; }
+  @keyframes heartbeat {
+    0%, 100% { transform: scale(1); }
+    14% { transform: scale(1.25); }
+    28% { transform: scale(1); }
+    42% { transform: scale(1.15); }
+    70% { transform: scale(1); }
+  }
+  .final-title {
+    font-family: 'Playfair Display', serif;
+    color: var(--pink-hot); font-size: 36px; font-weight: 900;
+    line-height: 1.2; margin-bottom: 18px;
+  }
+  .final-msg { font-size: 17px; color: #444; line-height: 1.6; margin-bottom: 20px; }
+  .final-ilysm { color: var(--pink-hot); font-size: 22px; font-weight: 800; }
+
+  /* Confetti layer */
+  #confetti-layer {
+    position: fixed; inset: 0; pointer-events: none; z-index: 9999; overflow: hidden;
+  }
+  .confetti-piece {
+    position: absolute; width: 10px; height: 14px;
+    animation: confettiDrop linear forwards;
+    border-radius: 2px;
+  }
+  @keyframes confettiDrop {
+    0% { transform: translateY(-40px) rotate(0deg); opacity: 1; }
+    100% { transform: translateY(110vh) rotate(720deg); opacity: 0; }
+  }
+</style>
+</head>
+<body>
+
+<!-- Music button -->
+<button class="music-btn" id="musicBtn" onclick="toggleMusic()" title="Toggle music">🎵</button>
+
+<!-- Confetti layer -->
+<div id="confetti-layer"></div>
+
+<!-- Hidden audio -->
+<audio id="bgMusic" loop>
+  <!-- <source src="https://www.soundhelix.com/examples/mp3/SoundHelix-Song-1.mp3" type="audio/mpeg"> -->
+  <source src="src\Tum_Mile.mp3" type="audio/mpeg">
+</audio>
+
+<!-- ===================== SCENE 1 – Welcome ===================== -->
+<div class="scene active" id="s1">
+  <div class="float-icons" id="fi1"></div>
+  <div class="card">
+    <span class="card-icon">✨</span>
+    <p class="card-text">Remember, you light up every room you enter!</p>
+    <div class="btn-row">
+      <button class="btn" onclick="goTo(2)">Yes, please!</button>
+      <button class="btn" onclick="goTo(2)">Show me!</button>
+    </div>
+  </div>
+</div>
+
+<!-- ===================== SCENE 2 – Song ===================== -->
+<div class="scene" id="s2">
+  <div class="float-icons" id="fi2"></div>
+  <div class="card">
+    <span class="card-icon">🎵</span>
+    <p class="card-text">I've curated a special song just for you. Ready to listen?</p>
+    <div class="btn-row">
+      <button class="btn" onclick="goTo(3); startMusic()">Yes, play it!</button>
+      <button class="btn" onclick="goTo(3); startMusic()">Absolutely!</button>
+    </div>
+  </div>
+</div>
+
+<!-- ===================== SCENE 3 – Party intro ===================== -->
+<div class="scene" id="s3">
+  <div class="float-icons" id="fi3"></div>
+  <div class="big-msg">🎉 Let's get this party started!</div>
+  <br>
+  <button class="btn" style="z-index:1; margin-top:20px;" onclick="goTo(4)">Let's go! 🎈</button>
+</div>
+
+<!-- ===================== SCENE 4 – Balloon Pop ===================== -->
+<div class="scene" id="s4">
+  <h2>Let's blast some balloons!</h2>
+  <div id="balloon-stage">
+    <div id="pop-counter">🎈 0 popped</div>
+  </div>
+  <button id="next-cake-btn" onclick="goTo(5)">✨ Continue to Cake Ceremony →</button>
+</div>
+
+<!-- ===================== SCENE 5 – Cake ===================== -->
+<div class="scene" id="s5">
+  <h2 id="cake-h2">Light the candles by clicking on them,<br>then drag down to cut the cake!</h2>
+  <div id="cake-area">
+    <div id="cake-container">
+      <svg id="cake-svg" viewBox="0 0 400 260" xmlns="http://www.w3.org/2000/svg">
+        <!-- Cake body -->
+        <defs>
+          <linearGradient id="cakeGrad" x1="0" y1="0" x2="0" y2="1">
+            <stop offset="0%" stop-color="#f8a5c2"/>
+            <stop offset="100%" stop-color="#e91e8c"/>
+          </linearGradient>
+          <linearGradient id="topGrad" x1="0" y1="0" x2="0" y2="1">
+            <stop offset="0%" stop-color="#fce4ec"/>
+            <stop offset="100%" stop-color="#f48fb1"/>
+          </linearGradient>
+        </defs>
+        <!-- Cake base -->
+        <rect x="20" y="120" width="360" height="130" rx="8" ry="8" fill="url(#cakeGrad)"/>
+        <!-- Top frosting -->
+        <rect x="20" y="110" width="360" height="22" rx="4" fill="url(#topGrad)"/>
+        <!-- Frosting drips -->
+        <g fill="rgba(255,255,255,0.55)">
+          <ellipse cx="55" cy="125" rx="16" ry="18"/>
+          <ellipse cx="100" cy="130" rx="16" ry="20"/>
+          <ellipse cx="148" cy="125" rx="16" ry="18"/>
+          <ellipse cx="196" cy="132" rx="16" ry="22"/>
+          <ellipse cx="244" cy="125" rx="16" ry="18"/>
+          <ellipse cx="292" cy="130" rx="16" ry="20"/>
+          <ellipse cx="340" cy="125" rx="16" ry="18"/>
+          <ellipse cx="385" cy="130" rx="14" ry="18"/>
+        </g>
+
+        <!-- Candle 1 -->
+        <g id="candle-g1" class="candle-body" onclick="lightCandle(1)">
+          <rect x="148" y="70" width="18" height="44" rx="4" fill="#fdd835"/>
+          <rect x="150" y="68" width="14" height="8" rx="2" fill="#f57f17"/>
+          <line x1="157" y1="68" x2="157" y2="60" stroke="#424242" stroke-width="2"/>
+          <!-- flame -->
+          <g class="candle-flame" id="flame1">
+            <ellipse cx="157" cy="55" rx="7" ry="12" fill="#ff9800"/>
+            <ellipse cx="157" cy="55" rx="4" ry="8" fill="#ffeb3b"/>
+          </g>
+        </g>
+
+        <!-- Candle 2 -->
+        <g id="candle-g2" class="candle-body" onclick="lightCandle(2)">
+          <rect x="191" y="65" width="18" height="49" rx="4" fill="#fdd835"/>
+          <rect x="193" y="63" width="14" height="8" rx="2" fill="#f57f17"/>
+          <line x1="200" y1="63" x2="200" y2="55" stroke="#424242" stroke-width="2"/>
+          <g class="candle-flame" id="flame2">
+            <ellipse cx="200" cy="50" rx="7" ry="12" fill="#ff9800"/>
+            <ellipse cx="200" cy="50" rx="4" ry="8" fill="#ffeb3b"/>
+          </g>
+        </g>
+
+        <!-- Candle 3 -->
+        <g id="candle-g3" class="candle-body" onclick="lightCandle(3)">
+          <rect x="234" y="72" width="18" height="42" rx="4" fill="#fdd835"/>
+          <rect x="236" y="70" width="14" height="8" rx="2" fill="#f57f17"/>
+          <line x1="243" y1="70" x2="243" y2="62" stroke="#424242" stroke-width="2"/>
+          <g class="candle-flame" id="flame3">
+            <ellipse cx="243" cy="57" rx="7" ry="12" fill="#ff9800"/>
+            <ellipse cx="243" cy="57" rx="4" ry="8" fill="#ffeb3b"/>
+          </g>
+        </g>
+
+        <!-- Knife (hidden initially) -->
+        <g id="knife-svg" style="display:none; cursor:grab;">
+          <rect x="320" y="20" width="8" height="60" rx="2" fill="#9e9e9e" transform="rotate(-40, 324, 50)"/>
+          <polygon points="324,80 316,100 332,100" fill="#bdbdbd" transform="rotate(-40, 324, 80)"/>
+          <rect x="318" y="15" width="12" height="15" rx="3" fill="#5d4037" transform="rotate(-40, 324, 22)"/>
+        </g>
+
+        <!-- Cut line (hidden) -->
+        <line id="cut-line" x1="200" y1="108" x2="200" y2="250" stroke="rgba(255,255,255,0.9)"
+              stroke-width="2" stroke-dasharray="6,4" opacity="0" style="pointer-events:none"/>
+      </svg>
+      <p id="cake-instruction">👆 Click each candle to light it!</p>
+      <button id="blow-btn" onclick="blowCandles()">💨 Blow the candles!</button>
+      <button id="proceed-msg-btn" onclick="goTo(6)">See your message 💌</button>
+    </div>
+  </div>
+</div>
+
+<!-- ===================== SCENE 6 – Message + Playlist ===================== -->
+<div class="scene" id="s6">
+  <div class="photo-card">
+    <div class="photo-placeholder">
+      🌟💜🎂
+      <span style="font-size:16px; color:white; font-weight:700; text-align:center; padding:0 20px;">Your Photo Here</span>
+    </div>
+    <div class="photo-caption">
+      "To my partner-in-crime, my therapist, and my biggest cheerleader. Happy birthday, queen! The world shines brighter with you in it."
+    </div>
+  </div>
+
+  <div class="playlist-card">
+    <div class="playlist-title">🎵 Our Playlist</div>
+    <div class="song-item"><div class="song-num">1</div><div class="song-name">Blue – A.R. Rahman</div></div>
+    <div class="song-item"><div class="song-num">2</div><div class="song-name">Tum Mile</div></div>
+    <div class="song-item"><div class="song-num">3</div><div class="song-name">Raabta</div></div>
+    <div class="song-item"><div class="song-num">4</div><div class="song-name">Kesariya</div></div>
+    <div class="song-item"><div class="song-num">5</div><div class="song-name">Tera Ban Jaunga</div></div>
+  </div>
+
+  <button class="btn" style="background:var(--btn-purple); z-index:1;" onclick="goTo(7); launchConfetti()">See Final Wish 🎉</button>
+</div>
+
+<!-- ===================== SCENE 7 – Final ===================== -->
+<div class="scene" id="s7">
+  <div class="final-card">
+    <span class="final-heart">❤️</span>
+    <div class="final-title">Happy Birthday Madam Jii!!</div>
+    <p class="final-msg">Thanks for coming into my life, and making it better with your presence.</p>
+    <div class="final-ilysm">ilysm 💖</div>
+  </div>
+</div>
+
+<script>
+// ===== SCENE MANAGEMENT =====
+let currentScene = 1;
+function goTo(n) {
+  document.getElementById('s' + currentScene).classList.remove('active');
+  document.getElementById('s' + n).classList.add('active');
+  currentScene = n;
+  if (n === 4) initBalloons();
+  if (n === 5) initCake();
+}
+
+// ===== FLOAT ICONS =====
+const icons = ['⭐','💫','🎂','🎁','🎉','🎈','❤️','✨','🌟','🎊'];
+['fi1','fi2','fi3'].forEach(id => {
+  const el = document.getElementById(id);
+  for (let i = 0; i < 10; i++) {
+    const span = document.createElement('span');
+    span.className = 'float-icon';
+    span.textContent = icons[i % icons.length];
+    span.style.left = Math.random()*90 + '%';
+    span.style.top = Math.random()*90 + '%';
+    span.style.animationDelay = (Math.random()*4) + 's';
+    span.style.animationDuration = (4 + Math.random()*4) + 's';
+    el.appendChild(span);
+  }
+});
+
+// ===== MUSIC =====
+let musicPlaying = false;
+const musicBtn = document.getElementById('musicBtn');
+function toggleMusic() {
+  const audio = document.getElementById('bgMusic');
+  if (musicPlaying) {
+    audio.pause(); musicBtn.textContent = '🎵';
+    musicBtn.classList.remove('playing');
+  } else {
+    audio.play().catch(()=>{});
+    musicBtn.textContent = '🎶';
+    musicBtn.classList.add('playing');
+  }
+  musicPlaying = !musicPlaying;
+}
+function startMusic() {
+  if (!musicPlaying) toggleMusic();
+}
+
+// ===== BALLOONS =====
+const balloonColors = [
+  '#e91e8c','#ff5252','#ff9800','#ffeb3b',
+  '#69f0ae','#40c4ff','#e040fb','#ff80ab'
+];
+let poppedCount = 0;
+let totalBalloons = 15;
+let balloonInterval;
+
+function initBalloons() {
+  poppedCount = 0;
+  document.getElementById('pop-counter').textContent = '🎈 0 popped';
+  document.getElementById('next-cake-btn').style.display = 'none';
+  const stage = document.getElementById('balloon-stage');
+  // Clear old balloons
+  stage.querySelectorAll('.balloon').forEach(b => b.remove());
+
+  let launched = 0;
+  balloonInterval = setInterval(() => {
+    if (launched >= totalBalloons) { clearInterval(balloonInterval); return; }
+    spawnBalloon();
+    launched++;
+  }, 600);
+}
+
+function spawnBalloon() {
+  const stage = document.getElementById('balloon-stage');
+  const b = document.createElement('div');
+  b.className = 'balloon';
+  const color = balloonColors[Math.floor(Math.random()*balloonColors.length)];
+  b.style.background = color;
+  b.style.left = (5 + Math.random()*80) + '%';
+  b.style.animationDuration = (5 + Math.random()*5) + 's';
+  b.style.animationDelay = '0s';
+  b.textContent = '🎈';
+  b.style.fontSize = '0px'; // use color bg only
+
+  b.onclick = () => {
+    if (b.classList.contains('popped')) return;
+    b.classList.add('popped');
+    poppedCount++;
+    document.getElementById('pop-counter').textContent = `🎈 ${poppedCount} popped`;
+    spawnConfettiAt(b);
+    if (poppedCount >= 4) {
+      document.getElementById('next-cake-btn').style.display = 'block';
+    }
+    setTimeout(() => b.remove(), 400);
+  };
+  stage.appendChild(b);
+}
+
+function spawnConfettiAt(el) {
+  const stage = document.getElementById('balloon-stage');
+  const rect = el.getBoundingClientRect();
+  const stageRect = stage.getBoundingClientRect();
+  for (let i = 0; i < 10; i++) {
+    const dot = document.createElement('div');
+    dot.style.cssText = `
+      position:absolute; width:8px; height:8px; border-radius:50%;
+      background:${balloonColors[Math.floor(Math.random()*balloonColors.length)]};
+      left:${rect.left - stageRect.left + 30}px;
+      top:${rect.top - stageRect.top + 30}px;
+      pointer-events:none;
+      animation: confettiFall 1s ease-in forwards;
+      animation-delay:${Math.random()*0.3}s;
+    `;
+    stage.appendChild(dot);
+    setTimeout(() => dot.remove(), 1500);
+  }
+}
+
+// ===== CAKE =====
+let candlesLit = 0;
+let cakeCut = false;
+let isDraggingKnife = false;
+let knifeStartY = 0;
+
+function initCake() {
+  candlesLit = 0; cakeCut = false;
+  ['flame1','flame2','flame3'].forEach(id => {
+    document.getElementById(id).classList.remove('lit');
+  });
+  document.getElementById('blow-btn').style.display = 'none';
+  document.getElementById('proceed-msg-btn').style.display = 'none';
+  document.getElementById('knife-svg').style.display = 'none';
+  document.getElementById('cut-line').setAttribute('opacity','0');
+  document.getElementById('cake-instruction').textContent = '👆 Click each candle to light it!';
+}
+
+function lightCandle(n) {
+  const flame = document.getElementById('flame' + n);
+  if (!flame.classList.contains('lit')) {
+    flame.classList.add('lit');
+    candlesLit++;
+    if (candlesLit === 3) {
+      document.getElementById('cake-instruction').textContent = '🎉 All candles lit! Now blow them out!';
+      document.getElementById('blow-btn').style.display = 'block';
+    }
+  }
+}
+
+function blowCandles() {
+  // Animate flames going out
+  ['flame1','flame2','flame3'].forEach((id, i) => {
+    setTimeout(() => {
+      document.getElementById(id).classList.remove('lit');
+      document.getElementById(id).style.opacity = '0';
+    }, i * 200);
+  });
+  document.getElementById('blow-btn').style.display = 'none';
+  document.getElementById('cake-instruction').textContent = 'Drag the knife down to cut the cake! 🔪';
+  document.getElementById('knife-svg').style.display = 'block';
+
+  // Enable knife dragging on SVG
+  const svg = document.getElementById('cake-svg');
+  const knifeSvg = document.getElementById('knife-svg');
+
+  svg.style.cursor = 'crosshair';
+
+  let cutting = false;
+  let cutProgress = 0;
+
+  svg.addEventListener('pointerdown', startCut);
+  svg.addEventListener('pointermove', doCut);
+  svg.addEventListener('pointerup', endCut);
+
+  function startCut(e) {
+    if (cakeCut) return;
+    cutting = true;
+    cutProgress = 0;
+  }
+
+  function doCut(e) {
+    if (!cutting || cakeCut) return;
+    cutProgress += 5;
+    const line = document.getElementById('cut-line');
+    const endY = Math.min(108 + cutProgress * 1.4, 252);
+    line.setAttribute('y2', endY);
+    line.setAttribute('opacity', '0.9');
+
+    if (cutProgress >= 100) {
+      cakeCut = true;
+      cutting = false;
+      completeCut();
+    }
+  }
+
+  function endCut(e) {
+    if (!cakeCut && cutProgress > 20) {
+      cakeCut = true;
+      cutting = false;
+      completeCut();
+    }
+    cutting = false;
+  }
+}
+
+function completeCut() {
+  document.getElementById('cake-instruction').textContent = '🎂 Cake cut! Happy Birthday!!';
+  document.getElementById('knife-svg').style.display = 'none';
+  launchConfettiSmall();
+  setTimeout(() => {
+    document.getElementById('proceed-msg-btn').style.display = 'block';
+  }, 800);
+}
+
+// ===== CONFETTI =====
+function launchConfetti() {
+  const layer = document.getElementById('confetti-layer');
+  const confettiColors = ['#e91e8c','#9c27b0','#ff9800','#ffeb3b','#69f0ae','#40c4ff','#ff5252'];
+  for (let i = 0; i < 80; i++) {
+    const p = document.createElement('div');
+    p.className = 'confetti-piece';
+    p.style.left = Math.random()*100 + 'vw';
+    p.style.background = confettiColors[Math.floor(Math.random()*confettiColors.length)];
+    p.style.animationDuration = (1.5 + Math.random()*2) + 's';
+    p.style.animationDelay = (Math.random()*1.5) + 's';
+    p.style.width = (6 + Math.random()*10) + 'px';
+    p.style.height = (8 + Math.random()*14) + 'px';
+    p.style.borderRadius = Math.random() > 0.5 ? '50%' : '2px';
+    layer.appendChild(p);
+    setTimeout(() => p.remove(), 4500);
+  }
+}
+
+function launchConfettiSmall() {
+  const layer = document.getElementById('confetti-layer');
+  const confettiColors = ['#e91e8c','#ff9800','#ffeb3b','#69f0ae'];
+  for (let i = 0; i < 40; i++) {
+    const p = document.createElement('div');
+    p.className = 'confetti-piece';
+    p.style.left = (20 + Math.random()*60) + 'vw';
+    p.style.background = confettiColors[Math.floor(Math.random()*confettiColors.length)];
+    p.style.animationDuration = (1 + Math.random()*1.5) + 's';
+    p.style.animationDelay = (Math.random()*0.5) + 's';
+    layer.appendChild(p);
+    setTimeout(() => p.remove(), 3000);
+  }
+}
+
+// Auto-advance scene 3 after 2.5s
+document.getElementById('s3').addEventListener('transitionend', function() {
+  if (currentScene === 3) {
+    setTimeout(() => { if (currentScene === 3) goTo(4); }, 2500);
+  }
+});
+</script>
+</body>
+</html>

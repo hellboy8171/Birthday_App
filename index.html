@@ -860,8 +860,7 @@
   <div class="scene" id="s6">
     <div class="photo-card">
       <div class="photo-placeholder">
-        <img src="images/1.jpg" alt="Birthday Girl"
-          style="font-size:16px; color:white; font-weight:700; text-align:center; padding:0 20px;">
+        <img src="images/2.png" alt="Birthday Girl" style="width:100%; height:100%; object-fit:cover; display:block;">
       </div>
       <div class="photo-caption">
         "To my partner-in-crime, my therapist, and my biggest cheerleader. Happy birthday, queen! The world shines
@@ -870,29 +869,34 @@
     </div>
 
 
-    <div class="song-item" onclick="window.open('https://www.youtube.com/watch?v=mt9xg0mmt28', '_blank')"
-      style="cursor:pointer;">
-      <div class="song-num">1</div>
-      <div class="song-name">▶ Tum Se Hi – Mohit</div>
+    <div class="playlist-card">
+      <div class="playlist-title">🎵 Our Playlist</div>
+      <div class="song-item" onclick="window.open('https://www.youtube.com/watch?v=mt9xg0mmt28', '_blank')"
+        style="cursor:pointer;">
+        <div class="song-num">1</div>
+        <div class="song-name">▶ Tum Se Hi – Mohit</div>
+      </div>
+
+      <div class="song-item"
+        onclick="window.open('https://www.youtube.com/watch?v=odVptmgIcD0&list=RDodVptmgIcD0&start_radio=1', '_blank')"
+        style="cursor:pointer;">
+        <div class="song-num">2</div>
+        <div class="song-name">▶ Tum Mile</div>
+      </div>
+
+      <div class="song-item" onclick="window.open('https://www.youtube.com/watch?v=DQ4r7HegRQw', '_blank')"
+        style="cursor:pointer;">
+        <div class="song-num">3</div>
+        <div class="song-name">▶ The Night We Met</div>
+      </div>
+
+      <div class="song-item" onclick="window.open('https://www.youtube.com/watch?v=2Vv-BfVoq4g', '_blank')"
+        style="cursor:pointer;">
+        <div class="song-num">4</div>
+        <div class="song-name">▶ Perfect</div>
+      </div>
     </div>
 
-    <div class="song-item" onclick="window.open('https://www.youtube.com/watch?v=odVptmgIcD0&list=RDodVptmgIcD0&start_radio=1', '_blank')"
-      style="cursor:pointer;">
-      <div class="song-num">2</div>
-      <div class="song-name">▶ Tum Mile</div>
-    </div>
-
-    <div class="song-item" onclick="window.open('https://www.youtube.com/watch?v=DQ4r7HegRQw', '_blank')"
-      style="cursor:pointer;">
-      <div class="song-num">3</div>
-      <div class="song-name">▶ The Night We Met</div>
-    </div>
-
-    <div class="song-item" onclick="window.open('https://www.youtube.com/watch?v=2Vv-BfVoq4g', '_blank')"
-      style="cursor:pointer;">
-      <div class="song-num">4</div>
-      <div class="song-name">▶ Perfect</div>
-    </div>
 
     <button class="btn" style="background:var(--btn-purple); z-index:1;" onclick="goTo(7); launchConfetti()">See Final
       Wish 🎉</button>
@@ -1004,7 +1008,7 @@
       }
 
       b.onclick = popBalloon;
-      b.addEventListener('touchstart', function(e) {
+      b.addEventListener('touchstart', function (e) {
         e.preventDefault();
         popBalloon();
       }, { passive: false });
